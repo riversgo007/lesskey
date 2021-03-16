@@ -7,7 +7,7 @@
 
 		<h1>{{ msg }}</h1>
 		<el-radio-group v-model="tabSwitch">
-			<el-radio-button label="1">KeySpace</el-radio-button>
+			<el-radio-button label="1">Keyspace</el-radio-button>
 			<el-radio-button label="2">存储</el-radio-button>
 			<el-radio-button label="3">获取</el-radio-button>
 		</el-radio-group>
@@ -22,14 +22,14 @@
 			<el-input
 				type="password"
 				v-model="keySpaceTab.input1"
-				placeholder="Password:  对称密钥盐值，请务必牢记于心."
+				placeholder="Password:  输入对称密钥盐值，请务必牢记于心."
 			></el-input>
-			<el-dialog title="确认" :visible.sync="keySpaceTab.confirm" width="50%">
+			<el-dialog title="" :visible.sync="keySpaceTab.confirm" width="50%">
 				<el-input
 					v-model="keySpaceTab.input1Confirm"
-					placeholder="再次确认密码"
+					placeholder="再次输入对称密钥盐值"
 				></el-input>
-				<el-button type="primary" @click="initKeySpace">确认</el-button>
+				<el-button type="primary" @click="initKeySpace">确认初始化</el-button>
 			</el-dialog>
 			<el-button @click="beforeInitKeySpace" type="primary"
 				>Keyspace 初始化</el-button
@@ -41,13 +41,13 @@
 				v-model="setTab.input0"
 				placeholder="Keyspace:  请输入初始化时使用的密钥空间值"
 			></el-input>
-			<el-dialog title="存储密码" :visible.sync="setTab.confirm" width="50%">
+			<el-dialog title="" :visible.sync="setTab.confirm" width="50%">
 				<el-input
 					v-model="setTab.password"
-					placeholder="存储你输入的密码"
+					placeholder="请输入密钥盐值"
 				></el-input>
 				<el-button type="primary" @click="savePrivateSecret"
-					>存储密码</el-button
+					>确认存储</el-button
 				>
 			</el-dialog>
 			<div class="flex">
