@@ -43,6 +43,7 @@
 			></el-input>
 			<el-dialog title="" :visible.sync="setTab.confirm" width="50%">
 				<el-input
+                    type="password"
 					v-model="setTab.password"
 					placeholder="请输入密钥盐值"
 				></el-input>
