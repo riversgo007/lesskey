@@ -26,6 +26,7 @@
 			></el-input>
 			<el-dialog title="" :visible.sync="keySpaceTab.confirm" width="50%">
 				<el-input
+						type="password"
 					v-model="keySpaceTab.input1Confirm"
 					placeholder="再次输入对称密钥盐值"
 				></el-input>
@@ -207,8 +208,8 @@ export default {
 	margin: 0 auto;
 	.connect {
 		position: absolute;
-		top: 10px;
-		right: 10px;
+		top: 30px;
+		right: 50px;
 	}
 	.tab-container {
 		width: 100%;
