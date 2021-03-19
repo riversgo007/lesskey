@@ -3,7 +3,7 @@
 		<el-button class="connect" @click="connectWallet" v-show="!checksumAddress"
 			>连接钱包</el-button
 		>
-		<el-button disabled v-show="checksumAddress">钱包已连接</el-button>
+		<el-button class="connect" disabled v-show="checksumAddress">钱包已连接</el-button>
 
 		<h1>{{ msg }}</h1>
 		<el-radio-group v-model="tabSwitch">
