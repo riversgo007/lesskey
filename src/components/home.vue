@@ -22,13 +22,13 @@
 			<el-input
 				type="password"
 				v-model="keySpaceTab.input1"
-				placeholder="Password:  输入对称密钥盐值，请务必牢记于心."
+				placeholder="Password:  输入加密密钥，请务必牢记于心."
 			></el-input>
 			<el-dialog title="" :visible.sync="keySpaceTab.confirm" width="50%">
 				<el-input
 						type="password"
 					v-model="keySpaceTab.input1Confirm"
-					placeholder="再次输入对称密钥盐值"
+					placeholder="再次输入加密密钥"
 				></el-input>
 				<el-button type="primary" @click="initKeySpace">确认初始化</el-button>
 			</el-dialog>
@@ -46,7 +46,7 @@
 				<el-input
                     type="password"
 					v-model="setTab.password"
-					placeholder="请输入密钥盐值"
+					placeholder="请输入加密密钥"
 				></el-input>
 				<el-button type="primary" @click="savePrivateSecret"
 					>确认存储</el-button
