@@ -78,6 +78,8 @@
 </template>
 
 <script>
+import NodeRSA from 'node-rsa';
+import {ethers} from 'ethers';
 import Web3 from "web3"
 let web3 = new Web3(window.ethereum)
 // todo 此处填写合约地址
@@ -138,6 +140,28 @@ export default {
 			} else {
 				this.keySpaceTab.confirm = true
 			}
+			
+			let _input0 = ethers.utils.toUtf8Bytes(this.keySpaceTab.input0),
+				_input1 = ethers.utils.toUtf8Bytes(this.keySpaceTab.input1),
+				_input = ethers.utils.sha256(_input0)+ethers.utils.sha256(_input1)
+			;
+
+			let _hash = ethers.utils.sha256(ethers.utils.toUtf8Bytes(_input));
+			console.info("hash串="+_hash);
+
+			let nodersa = new NodeRSA({b:512});//e:_hash
+			let publicKey = nodersa.exportKey("pkcs8-public-pem");
+			let privateKey = nodersa.exportKey("pkcs8-private-pem");
+
+			console.info(publicKey);
+			//console.info(privateKey);
+
+			let expanded = nodersa.sign(_hash);
+			let _temp = Buffer.from(expanded).toString("base64");
+			console.info(_temp);
+
+			let r = nodersa.verify(_hash,expanded);	
+			console.info(r);
 		},
 		async initKeySpace() {
 			if (this.keySpaceTab.input1Confirm != this.keySpaceTab.input1) {
