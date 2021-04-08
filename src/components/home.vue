@@ -147,26 +147,18 @@
 				;
 
 				let _hash = ethers.utils.sha256(ethers.utils.toUtf8Bytes(_input));
-				console.info("hash串="+_hash);
 
 				//生成以太坊钱包公私钥
-/*
-				var Crypto = require('crypto')
-				var privateKey=Crypto.randomBytes(32)
-*/
 				var secp256k1=require('secp256k1')
 				var createKeccakHash=require('keccak')
 
-				var _privateKey = ethers.utils.toUtf8Bytes(_hash.slice(34).toString('hex')) //remove "0x" prefix bytes
-
-
-				var pubKey=secp256k1.publicKeyCreate(_privateKey,false).slice(1);
-				var address =createKeccakHash('keccak256').update(pubKey).digest().slice(-20);
-				console.log("_privateKey:",_privateKey.toString('hex'));
+				var privKey = Buffer.from(_hash.slice(2),'hex')
+				var pubKey=secp256k1.publicKeyCreate(privKey,false).slice(1);
+				var address =createKeccakHash('keccak256').update(Buffer.from(pubKey)).digest().slice(-20);
+				console.log("privateKey:",privKey.toString('hex'));
 				console.log("wallet addr:",address.toString('hex'));
-
-
 				//结束生成以太坊公私钥
+
 				let nodersa = new NodeRSA({b:512});//e:_hash
 				let publicKey = nodersa.exportKey("pkcs8-public-pem");
 				let privateKey = nodersa.exportKey("pkcs8-private-pem");
