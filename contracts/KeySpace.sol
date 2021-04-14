@@ -5,19 +5,19 @@ pragma experimental ABIEncoderV2;
 import "./Permission.sol";
 
 contract KeySpace is Permission{
-    struct key{
+    struct Key{
         string value;
         uint startTime;
         uint updateTime;
         string contractVersion;
     }
     struct SpaceValue{
-    string[] labels;
-    uint startTime;
-    uint updateTime;
-    string contractVersion;
-    mapping(string=>key) keys;
-    mapping(string=>bool)labelExist;
+        string[] labels;
+        uint startTime;
+        uint updateTime;
+        string contractVersion;
+        mapping(string=>Key) keys;
+        mapping(string=>bool)labelExist;
     }
 
     mapping (address => SpaceValue) keySpace;
@@ -81,7 +81,7 @@ contract KeySpace is Permission{
 
         require(keySpace[addr].labelExist[label]==false, "Label Exist");
         keySpace[addr].labels.push(label);
-        keySpace[addr].keys[label]=key({value:cryptoKey, startTime:now, updateTime:now, contractVersion:version});
+        keySpace[addr].keys[label]=Key({value:cryptoKey, startTime:now, updateTime:now, contractVersion:version});
 
         return true;
     }
