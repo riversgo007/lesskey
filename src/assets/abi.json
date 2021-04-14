@@ -1,156 +1,226 @@
 [
   {
-   "inputs": [
-    {
-     "internalType": "address",
-     "name": "globalID",
-     "type": "address"
-    },
-    {
-     "internalType": "address",
-     "name": "secret",
-     "type": "address"
-    }
-   ],
-   "name": "initKeySpace",
-   "outputs": [],
-   "stateMutability": "nonpayable",
-   "type": "function"
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "version",
+        "type": "string"
+      }
+    ],
+    "name": "InitKeySpace",
+    "type": "event"
   },
   {
-   "inputs": [
-    {
-     "internalType": "address",
-     "name": "keyspace",
-     "type": "address"
-    },
-    {
-     "internalType": "address",
-     "name": "label",
-     "type": "address"
-    },
-    {
-     "internalType": "address",
-     "name": "content",
-     "type": "address"
-    }
-   ],
-   "name": "savePrivateSecret",
-   "outputs": [],
-   "stateMutability": "nonpayable",
-   "type": "function"
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "addrHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "version",
+        "type": "string"
+      }
+    ],
+    "name": "initKeySpace",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-   "inputs": [],
-   "stateMutability": "nonpayable",
-   "type": "constructor"
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      }
+    ],
+    "name": "spaceExist",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-   "inputs": [
-    {
-     "internalType": "address",
-     "name": "",
-     "type": "address"
-    }
-   ],
-   "name": "contents",
-   "outputs": [
-    {
-     "internalType": "bool",
-     "name": "",
-     "type": "bool"
-    }
-   ],
-   "stateMutability": "view",
-   "type": "function"
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "addrHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "label",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "cryptoKey",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "labelKeyHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "version",
+        "type": "string"
+      }
+    ],
+    "name": "addKey",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-   "inputs": [
-    {
-     "internalType": "address",
-     "name": "",
-     "type": "address"
-    }
-   ],
-   "name": "ids",
-   "outputs": [
-    {
-     "internalType": "bool",
-     "name": "",
-     "type": "bool"
-    }
-   ],
-   "stateMutability": "view",
-   "type": "function"
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "addrHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "label",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "cryptoKey",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "labelKeyHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "updateKey",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-   "inputs": [
-    {
-     "internalType": "address",
-     "name": "",
-     "type": "address"
-    }
-   ],
-   "name": "keyspaces",
-   "outputs": [
-    {
-     "internalType": "bool",
-     "name": "",
-     "type": "bool"
-    }
-   ],
-   "stateMutability": "view",
-   "type": "function"
-  },
-  {
-   "inputs": [
-    {
-     "internalType": "address",
-     "name": "",
-     "type": "address"
-    }
-   ],
-   "name": "labels",
-   "outputs": [
-    {
-     "internalType": "bool",
-     "name": "",
-     "type": "bool"
-    }
-   ],
-   "stateMutability": "view",
-   "type": "function"
-  },
-  {
-   "inputs": [],
-   "name": "queryPrivateSecret",
-   "outputs": [
-    {
-     "internalType": "bool",
-     "name": "",
-     "type": "bool"
-    }
-   ],
-   "stateMutability": "pure",
-   "type": "function"
-  },
-  {
-   "inputs": [
-    {
-     "internalType": "address",
-     "name": "",
-     "type": "address"
-    }
-   ],
-   "name": "secrets",
-   "outputs": [
-    {
-     "internalType": "bool",
-     "name": "",
-     "type": "bool"
-    }
-   ],
-   "stateMutability": "view",
-   "type": "function"
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      }
+    ],
+    "name": "allLabels",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
   }
- ]
+]

@@ -78,9 +78,10 @@
 </template>
 
 <script>
-	import NodeRSA from 'node-rsa';
+	//import NodeRSA from 'node-rsa';
 	import {ethers} from 'ethers';
-	import Web3 from "web3"
+	import Web3 from "web3";
+	import CryptoJS from 'crypto-js';
 	let web3 = new Web3(window.ethereum)
 	// todo 此处填写合约地址
 	const CONTRACT_ADDRESS = "0x3694FD2B16820016A4FB722ce1523FF742cC1016"
@@ -133,6 +134,49 @@
 			connectWallet() {
 				window.ethereum.request({ method: "eth_requestAccounts" })
 			},
+
+			calculateMultiHash(str, n){
+				var sha256Value = "";
+				for (var i=0;i<n;i++){
+					sha256Value = ethers.utils.sha256(ethers.utils.toUtf8Bytes(str))
+					str = sha256Value
+				}
+				return sha256Value
+			},
+
+			calculateValidSeed(str1, str2){
+				const DEEPING = 64;
+				let h1 = this.calculateMultiHash(str1, 2);
+				let h2 = this.calculateMultiHash(str2, 2);
+				for(var i=0; i<DEEPING; i++){
+					let pair1 = this.calculatePairsBaseOnSeed(h1);
+					let pair2 = this.calculatePairsBaseOnSeed(h2);
+
+					h1 = web3.eth.accounts.sign(h2,pair1.privKey).messageHash;
+					h2 = web3.eth.accounts.sign(h1, pair2.privKey).messageHash;
+				}
+				return ethers.utils.sha256(ethers.utils.toUtf8Bytes(h1+h2))
+			},
+
+			calculateWalletAddressBaseOnSeed(seed){
+				return ethers.utils.computeAddress(seed);
+			},
+
+			calculatePairsBaseOnSeed(seed){
+				var secp256k1=require('secp256k1');
+				var createKeccakHash=require('keccak');
+
+				var privKey = Buffer.from(seed.slice(2),'hex');
+				var pubKey=secp256k1.publicKeyCreate(privKey,false).slice(1);
+
+				return {privKey:privKey.toString('hex'), pubKey: pubKey.toString('hex')};
+
+			},
+
+			calculateStringKeccak256(str){
+				return ethers.utils.solidityKeccak256(['string'],[str]);
+			},
+
 			beforeInitKeySpace() {
 				if (!this.keySpaceTab.input0.trim() || !this.keySpaceTab.input1.trim()) {
 					this.$message.error("请在将 Keyspace 与 Password 输入框填写完整")
@@ -141,37 +185,47 @@
 					this.keySpaceTab.confirm = true
 				}
 
-				let _input0 = ethers.utils.toUtf8Bytes(this.keySpaceTab.input0),
-						_input1 = ethers.utils.toUtf8Bytes(this.keySpaceTab.input1),
-						_input = ethers.utils.sha256(_input0)+ethers.utils.sha256(_input1)
-				;
+				let seed = this.calculateValidSeed(this.keySpaceTab.input0, this.keySpaceTab.input1)
+				let addr = this.calculateWalletAddressBaseOnSeed(seed)
+				let pairs = this.calculatePairsBaseOnSeed(seed)
 
-				let _hash = ethers.utils.sha256(ethers.utils.toUtf8Bytes(_input));
+				let message = "\x19Ethereum Signed Message:\n"+addr.length+addr;
 
-				//生成以太坊钱包公私钥
-				var secp256k1=require('secp256k1')
-				var createKeccakHash=require('keccak')
+				let signature = web3.eth.accounts.sign(message,pairs.privKey);
+				console.log('addr:', (addr))
+				console.log("sign.v:", signature.v)
+				console.log("sign.r:", signature.r)
+				console.log("sign.s:", signature.s)
+                console.log("hash:",signature.messageHash)
+/*
+				console.log("addr:",this.calculateWalletAddressBaseOnSeed(seed));
+				console.log("pubkey:",pairs.pubKey)
+				console.log("privKey:",pairs.privKey)
+				console.log("hello world, sha256:",this.calculateStringKeccak256('hello world'));
+*/
 
-				var privKey = Buffer.from(_hash.slice(2),'hex')
-				var pubKey=secp256k1.publicKeyCreate(privKey,false).slice(1);
-				var address =createKeccakHash('keccak256').update(Buffer.from(pubKey)).digest().slice(-20);
-				console.log("privateKey:",privKey.toString('hex'));
-				console.log("wallet addr:",address.toString('hex'));
-				//结束生成以太坊公私钥
 
-				let nodersa = new NodeRSA({b:512});//e:_hash
+				//***************对称加密********************
+                let mys = CryptoJS.AES.encrypt("my message", 'password').toString();
+                console.log("aes result:", mys)
+				console.log("re-ase:", CryptoJS.AES.decrypt(mys,'password').toString(CryptoJS.enc.Utf8))
+				//**************对称加密结束*******************
+
+/*				****************非对称加密*****************
+				let nodersa = new NodeRSA({b:512});//e:seed
 				let publicKey = nodersa.exportKey("pkcs8-public-pem");
 				let privateKey = nodersa.exportKey("pkcs8-private-pem");
 
 				console.info(publicKey);
-				//console.info(privateKey);
 
-				let expanded = nodersa.sign(_hash);
+				let expanded = nodersa.sign(seed);
 				let _temp = Buffer.from(expanded).toString("base64");
 				console.info(_temp);
 
-				let r = nodersa.verify(_hash,expanded);
+				let r = nodersa.verify(seed,expanded);
 				console.info(r);
+				******************非对称加密结束****************
+*/
 			},
 			async initKeySpace() {
 				if (this.keySpaceTab.input1Confirm != this.keySpaceTab.input1) {
@@ -183,11 +237,11 @@
 				}
 				const myAddress = (await web3.eth.getAccounts())[0]
 				console.log("myAddress is", myAddress)
-				const assetContract = new web3.eth.Contract(
+				const keySpaceContract = new web3.eth.Contract(
 						require("../assets/abi.json"),
 						CONTRACT_ADDRESS
 				)
-				return await assetContract.methods
+				return await keySpaceContract.methods
 						.initKeySpace(this.keySpaceTab.input0, this.keySpaceTab.input1)
 						.send({ from: myAddress })
 			},
@@ -206,11 +260,11 @@
 			async savePrivateSecret() {
 				this.passwordStore = this.setTab.password
 				const myAddress = (await web3.eth.getAccounts())[0]
-				const assetContract = new web3.eth.Contract(
+				const keySpaceContract = new web3.eth.Contract(
 						require("../assets/abi.json"),
 						CONTRACT_ADDRESS
 				)
-				return await assetContract.methods
+				return await keySpaceContract.methods
 						.savePrivateSecret(
 								this.setTab.input0,
 								this.setTab.input1,
@@ -220,11 +274,11 @@
 			},
 			async queryPrivateSecret() {
 				const myAddress = (await web3.eth.getAccounts())[0]
-				const assetContract = new web3.eth.Contract(
+				const keySpaceContract = new web3.eth.Contract(
 						require("../assets/abi.json"),
 						CONTRACT_ADDRESS
 				)
-				this.getTab.result = await assetContract.methods
+				this.getTab.result = await keySpaceContract.methods
 						.queryPrivateSecret(this.getTab.input0)
 						.send({ from: myAddress })
 			},

@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Home msg="Less Key, More Reliable."/>
+    <Home msg="In Crypto,We Trust."/>
   </div>
 </template>
 
