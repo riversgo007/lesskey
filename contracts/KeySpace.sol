@@ -2,7 +2,9 @@
 pragma solidity >=0.4.24 <0.7.0;
 pragma experimental ABIEncoderV2;
 
-contract KeySpace {
+import "./Permission.sol";
+
+contract KeySpace is Permission{
     struct key{
         string value;
         uint startTime;
@@ -23,6 +25,11 @@ contract KeySpace {
     uint8 constant DefaultLabelsCapacity = 8;
 
     event InitKeySpace(address addr, string version);
+
+    constructor() public{
+        owner = msg.sender;
+    }
+
     /**
     * @dev init keyspace for new user.
     * @param addr address The address is the keyspace value expressed by address type.
@@ -31,7 +38,7 @@ contract KeySpace {
     * @param s bytes32
     * @param v uint8
     */
-    function initKeySpace(address addr, bytes32 addrHash, bytes32 r, bytes32 s,uint8 v, string memory version) public returns(bool){
+    function initKeySpace(address addr, bytes32 addrHash, bytes32 r, bytes32 s,uint8 v, string memory version) canAdd public returns(bool){
         require(ecrecover(addrHash, v, r, s) == addr,"Verify signature ERROR");
         require(addr != address(0),"Addr is ZERO");
         require(keySpaceExist[addr]==false,"Keyspace has Exist");
@@ -67,7 +74,7 @@ contract KeySpace {
     * @param cryptoKey string
     * @param labelKeyHash string
     */
-    function addKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, string memory label, string memory cryptoKey, bytes32 labelKeyHash, string memory version) public returns(bool){
+    function addKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, string memory label, string memory cryptoKey, bytes32 labelKeyHash, string memory version) canAdd public returns(bool){
         require(addr!=address(0), "Addr is ZERO");
         require(ecrecover(addrHash, v, r,s)==addr, "Verify signature ERROR");
         require(keccak256(abi.encodePacked(label, cryptoKey))==labelKeyHash, "Verify label-key ERROR");
@@ -91,7 +98,7 @@ contract KeySpace {
     * @param cryptoKey string
     * @param labelKeyHash string
     */
-    function updateKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, string memory label, string memory cryptoKey, bytes32 labelKeyHash) public returns(bool){
+    function updateKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, string memory label, string memory cryptoKey, bytes32 labelKeyHash) canUpdate public returns(bool){
         require(addr!=address(0), "Addr is ZERO");
         require(ecrecover(addrHash, v, r,s)==addr, "Verify signature ERROR");
         require(keccak256(abi.encodePacked(label, cryptoKey))==labelKeyHash, "Verify label-key ERROR");
