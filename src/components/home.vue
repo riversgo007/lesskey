@@ -85,6 +85,8 @@
 	let web3 = new Web3(window.ethereum)
 	// todo 此处填写合约地址
 	const CONTRACT_ADDRESS = "0x3694FD2B16820016A4FB722ce1523FF742cC1016"
+	const zlib = require("zlib");
+
 	export default {
 		name: "Home",
 		props: {
@@ -177,6 +179,23 @@
 				return ethers.utils.solidityKeccak256(['string'],[str]);
 			},
 
+			encryptMessage(message, password){
+				return CryptoJS.AES.encrypt(message, password).toString();
+			},
+
+			decryptMessage(message, password){
+				return CryptoJS.AES.decrypt(message,password).toString(CryptoJS.enc.Utf8)
+			},
+
+			compressMessage(plain){
+				return zlib.deflateRawSync(plain).toString('base64')
+			},
+
+			decompressMessage(plain){
+				//const zlib = require("zlib");
+				return zlib.inflateRawSync(Buffer.from(plain,'base64')).toString()
+			},
+
 			beforeInitKeySpace() {
 				if (!this.keySpaceTab.input0.trim() || !this.keySpaceTab.input1.trim()) {
 					this.$message.error("请在将 Keyspace 与 Password 输入框填写完整")
@@ -197,35 +216,11 @@
 				console.log("sign.r:", signature.r)
 				console.log("sign.s:", signature.s)
                 console.log("hash:",signature.messageHash)
-/*
-				console.log("addr:",this.calculateWalletAddressBaseOnSeed(seed));
-				console.log("pubkey:",pairs.pubKey)
-				console.log("privKey:",pairs.privKey)
-				console.log("hello world, sha256:",this.calculateStringKeccak256('hello world'));
-*/
 
+				let encryptText = this.encryptMessage("haliluya hello world what can fuck you please tell me may somebody","123456");
+                console.log("enctypt:",encryptText,",length:",encryptText.length)
+				console.log("end file:",this.decryptMessage(encryptText,"123456"))
 
-				//***************对称加密********************
-                let mys = CryptoJS.AES.encrypt("my message", 'password').toString();
-                console.log("aes result:", mys)
-				console.log("re-ase:", CryptoJS.AES.decrypt(mys,'password').toString(CryptoJS.enc.Utf8))
-				//**************对称加密结束*******************
-
-/*				****************非对称加密*****************
-				let nodersa = new NodeRSA({b:512});//e:seed
-				let publicKey = nodersa.exportKey("pkcs8-public-pem");
-				let privateKey = nodersa.exportKey("pkcs8-private-pem");
-
-				console.info(publicKey);
-
-				let expanded = nodersa.sign(seed);
-				let _temp = Buffer.from(expanded).toString("base64");
-				console.info(_temp);
-
-				let r = nodersa.verify(seed,expanded);
-				console.info(r);
-				******************非对称加密结束****************
-*/
 			},
 			async initKeySpace() {
 				if (this.keySpaceTab.input1Confirm != this.keySpaceTab.input1) {
