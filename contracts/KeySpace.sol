@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.24 <0.7.0;
-pragma experimental ABIEncoderV2;
+pragma solidity >=0.8.0;
 
 import "./Permission.sol";
+import "./Config.sol";
+import "./lib/Strings.sol";
 
-contract KeySpace is Permission{
+contract KeySpace is Permission, Config{
     struct Key{
         string value;
         uint startTime;
@@ -12,21 +13,21 @@ contract KeySpace is Permission{
         string contractVersion;
     }
     struct SpaceValue{
-        string[] labels;
         uint startTime;
         uint updateTime;
         string contractVersion;
-        mapping(string=>Key) keys;
-        mapping(string=>bool)labelExist;
     }
 
-    mapping (address => SpaceValue) keySpace;
-    mapping(address=>bool) keySpaceExist;
-    uint8 constant DefaultLabelsCapacity = 8;
+    mapping(address=>Key) public keys;  //address 是keyspace和label 混合后的地址
+    mapping(address=>bool) public labelExist; //address 是keyspace和label混合后的地址
+    mapping(address=>string[]) public labels; //address 是keyspace地址， string是label的真实值列表
+
+    mapping (address => SpaceValue) public keySpace;
+    mapping(address=>bool) public keySpaceExist;
 
     event InitKeySpace(address addr, string version);
 
-    constructor() public{
+    constructor() {
         owner = msg.sender;
     }
 
@@ -44,13 +45,12 @@ contract KeySpace is Permission{
         require(keySpaceExist[addr]==false,"Keyspace has Exist");
 
         keySpace[addr] = SpaceValue(
-            {startTime:now, updateTime:now,
-            labels:new string[](DefaultLabelsCapacity),
+            {startTime:block.timestamp, updateTime:block.timestamp,
             contractVersion:version}
         );
         keySpaceExist[addr] = true;
         emit InitKeySpace(addr, version);
-        return true;
+        return keySpaceExist[addr];
     }
 
     /**
@@ -72,17 +72,20 @@ contract KeySpace is Permission{
     * @param v uint8
     * @param label string
     * @param cryptoKey string
-    * @param labelKeyHash string
+    * @param globalHash string
     */
-    function addKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, string memory label, string memory cryptoKey, bytes32 labelKeyHash, string memory version) canAdd public returns(bool){
+    function addKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, address label, string memory cryptoKey, string memory labelName, string memory version,bytes32 globalHash) canAdd public returns(bool){
         require(addr!=address(0), "Addr is ZERO");
         require(ecrecover(addrHash, v, r,s)==addr, "Verify signature ERROR");
-        require(keccak256(abi.encodePacked(label, cryptoKey))==labelKeyHash, "Verify label-key ERROR");
 
-        require(keySpace[addr].labelExist[label]==false, "Label Exist");
-        keySpace[addr].labels.push(label);
-        keySpace[addr].keys[label]=Key({value:cryptoKey, startTime:now, updateTime:now, contractVersion:version});
+        string memory rawStr = Strings.concat(Strings.concat(Strings.concat(Strings.fromAddress(label),cryptoKey), labelName),version);
+        require(Strings.equals(Strings.fromBytes32(keccak256(Strings.toBytes(rawStr))), Strings.fromBytes32(globalHash)), "Verify globalHash ERROR");
+        require(bytes(cryptoKey).length<=MAX_CRYPTO_KEY_LEN);
+        require(labelExist[label]==false, "Label Exist");
 
+        //labels[keyspace].push(label);
+        keys[label]=Key({value:cryptoKey, startTime:block.timestamp, updateTime:block.timestamp, contractVersion:version});
+        labels[addr].push(labelName);
         return true;
     }
 
@@ -98,14 +101,15 @@ contract KeySpace is Permission{
     * @param cryptoKey string
     * @param labelKeyHash string
     */
-    function updateKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, string memory label, string memory cryptoKey, bytes32 labelKeyHash) canUpdate public returns(bool){
+    function updateKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, address label, string memory cryptoKey, bytes32 labelKeyHash) canUpdate public returns(bool){
         require(addr!=address(0), "Addr is ZERO");
         require(ecrecover(addrHash, v, r,s)==addr, "Verify signature ERROR");
         require(keccak256(abi.encodePacked(label, cryptoKey))==labelKeyHash, "Verify label-key ERROR");
-        require(keySpace[addr].labelExist[label]==true, "Label NO Exist");
+        require(labelExist[label]==true, "Label NO Exist");
+        require(bytes(cryptoKey).length<=MAX_CRYPTO_KEY_LEN);
 
-        keySpace[addr].keys[label].value=cryptoKey;
-        keySpace[addr].keys[label].updateTime = now;
+        keys[label].value=cryptoKey;
+        keys[label].updateTime = block.timestamp;
         return true;
     }
     /**
@@ -114,6 +118,26 @@ contract KeySpace is Permission{
     */
     function allLabels(address addr) public view returns(string[] memory){
         require(addr!=address(0), "Addr is ZERO");
-        return keySpace[addr].labels;
+        return labels[addr];
+    }
+
+    /**
+    * @dev add one key to a special keyspace; before save to storage, must
+    *  authentication the params with its hash value；
+    * @param addr address
+    * @param addrHash bytes32
+    * @param r bytes32
+    * @param s bytes32
+    * @param v uint8
+    * @param label address
+    * @param labelHash bytes32
+    */
+    function getKey(address addr, bytes32 addrHash, bytes32 r, bytes32 s, uint8 v, address label, bytes32 labelHash) public view returns(string memory){
+        require(addr!=address(0), "Addr is ZERO");
+        require(ecrecover(addrHash, v, r,s)==addr, "Verify signature ERROR");
+        require(Strings.equals(Strings.fromBytes32(keccak256(Strings.toBytes(Strings.fromAddress(label)))), Strings.fromBytes32(labelHash)), "Verify label hash ERROR");
+        //require(labelExist[label]==true, "Label NO Exist");
+
+        return keys[label].value;
     }
 }
