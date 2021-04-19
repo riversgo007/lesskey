@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0;
+pragma solidity=0.8.0;
 
 contract Config {
   uint constant  MAX_CRYPTO_KEY_LEN=2048;
