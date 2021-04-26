@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: MIT
+pragma solidity=0.8.0;
+
+library LibStack{
+    
+
+    struct Stack{
+        bytes32[] datas;
+    }
+
+
+    function push(Stack storage self, bytes32 data) internal{
+        self.datas.push(data);
+    } 
+
+    function pop(Stack storage self) internal returns(bytes32){
+        require(self.datas.length > 0);
+        bytes32 data = self.datas[self.datas.length - 1];
+        self.datas.pop();
+        return data;
+    }
+
+    function peek(Stack storage self) internal view returns(bytes32){
+        require(self.datas.length > 0);
+        bytes32 data = self.datas[self.datas.length - 1];
+        return data;
+    }
+    function getSize(Stack storage self) internal view returns(uint256){
+        return self.datas.length;
+    }
+}
